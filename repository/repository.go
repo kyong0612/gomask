@@ -63,12 +63,14 @@ func New(user, password, host, port, name string) (Repository, error) {
 }
 
 func (repo *Repository) Use(database string) error {
+	fmt.Printf("%+v", repo.dataSource)
 	ds := fmt.Sprintf(
-		"%s:%s@tcp(%s)/%s",
+		"%s:%s@tcp(%s)/%s?parseTime=true&columnsWithAlias=true&loc=%s",
 		repo.user,
 		repo.password,
 		fmt.Sprintf("%s:%s", repo.host, repo.port),
 		database,
+		"Asia%2FTokyo",
 	)
 	log.Println("[Connect]:", ds)
 	db, err := sqlx.Connect("mysql", ds)
@@ -81,17 +83,28 @@ func (repo *Repository) Use(database string) error {
 }
 
 const (
-	UpdateDefaultMasking = `UPDATE %s SET %s = CONCAT(LEFT( %s, 1),REPEAT('*',CHAR_LENGTH(%s) - 1));`
+	UpdateDefaultMasking = `UPDATE %s SET %s = CONCAT(LEFT(%s, 1),REPEAT('*',CHAR_LENGTH(%s) - 1));`
 
 	UpdateMasterMasking = `UPDATE %s SET %s = CONCAT(REPEAT('*', CHAR_LENGTH(%s)- TRUNCATE(CHAR_LENGTH(%s)/ 2, 0)), RIGHT(%s, TRUNCATE(CHAR_LENGTH(%s)/ 2, 0)));`
 
 	UpdateJsonMasking = `UPDATE %s SET %s = "{}";`
+
+	UpdateIntMasking = `UPDATE %s SET %s = CONCAT(LEFT(%s, 1),REPEAT(0,CHAR_LENGTH(%s) - 1));`
 )
 
 // Leave one letter and mask
 func (repo *Repository) DefaultMaking(ctx context.Context, table, column string) error {
 	// for check exec sql
 	q := fmt.Sprintf(UpdateDefaultMasking, table, column, column, column)
+	log.Println("[SQL] " + q)
+
+	_, err := repo.db.ExecContext(ctx, q)
+	return err
+}
+
+func (repo *Repository) IntMaking(ctx context.Context, table, column string) error {
+	// for check exec sql
+	q := fmt.Sprintf(UpdateIntMasking, table, column, column, column)
 	log.Println("[SQL] " + q)
 
 	_, err := repo.db.ExecContext(ctx, q)
@@ -112,9 +125,10 @@ func (repo *Repository) MasterMasking(ctx context.Context, table, column string)
 // Mask to Json
 func (repo *Repository) JsonMasking(ctx context.Context, table, column string) error {
 	// for check exec sql
-	log.Println("[SQL] " + UpdateJsonMasking)
+	q := fmt.Sprintf(UpdateJsonMasking, table, column)
+	log.Println("[SQL] " + q)
 
-	_, err := repo.db.ExecContext(ctx, UpdateJsonMasking)
+	_, err := repo.db.ExecContext(ctx, q)
 
 	return err
 }

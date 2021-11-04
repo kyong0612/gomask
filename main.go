@@ -45,7 +45,7 @@ func main() {
 
 	ctx := context.Background()
 
-	err = repo.Tx(ctx, func(repo repository.Repository) error {
+	err = repo.Tx(ctx, func(txRepo repository.Repository) error {
 
 		for _, db := range t {
 			err = repo.Use(db.Name)
@@ -55,21 +55,28 @@ func main() {
 			for _, table := range db.Tables {
 				for _, column := range table.Columns {
 					switch column.Kind {
+					case "default":
+						err := txRepo.DefaultMaking(ctx, table.Name, column.Name)
+						if err != nil && err != sql.ErrNoRows {
+							return err
+						}
+					case "int":
+						err := txRepo.IntMaking(ctx, table.Name, column.Name)
+						if err != nil && err != sql.ErrNoRows {
+							return err
+						}
 					case "master":
-						err := repo.MasterMasking(ctx, table.Name, column.Name)
+						err := txRepo.MasterMasking(ctx, table.Name, column.Name)
 						if err != nil && err != sql.ErrNoRows {
 							return err
 						}
 					case "json":
-						err := repo.JsonMasking(ctx, table.Name, column.Name)
+						err := txRepo.JsonMasking(ctx, table.Name, column.Name)
 						if err != nil && err != sql.ErrNoRows {
 							return err
 						}
 					default:
-						err := repo.DefaultMaking(ctx, table.Name, column.Name)
-						if err != nil && err != sql.ErrNoRows {
-							return err
-						}
+						return fmt.Errorf("[Masking kind does not match] %s", column.Kind)
 					}
 				}
 
