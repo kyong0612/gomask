@@ -84,12 +84,9 @@ const (
 	UpdateDefaultMasking = `UPDATE %s SET %s = CONCAT(LEFT( %s, 1),REPEAT('*',CHAR_LENGTH(%s) - 1));`
 
 	UpdateMasterMasking = `UPDATE %s SET %s = CONCAT(REPEAT('*', CHAR_LENGTH(%s)- TRUNCATE(CHAR_LENGTH(%s)/ 2, 0)), RIGHT(%s, TRUNCATE(CHAR_LENGTH(%s)/ 2, 0)));`
-)
 
-type Masked struct {
-	Table  string `db:"table"`
-	Column string `db:"column"`
-}
+	UpdateJsonMasking = `UPDATE %s SET %s = "{}";`
+)
 
 // Leave one letter and mask
 func (repo *Repository) DefaultMaking(ctx context.Context, table, column string) error {
@@ -108,6 +105,16 @@ func (repo *Repository) MasterMasking(ctx context.Context, table, column string)
 	log.Println("[SQL] " + q)
 
 	_, err := repo.db.ExecContext(ctx, q)
+
+	return err
+}
+
+// Mask to Json
+func (repo *Repository) JsonMasking(ctx context.Context, table, column string) error {
+	// for check exec sql
+	log.Println("[SQL] " + UpdateJsonMasking)
+
+	_, err := repo.db.ExecContext(ctx, UpdateJsonMasking)
 
 	return err
 }

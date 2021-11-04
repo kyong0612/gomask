@@ -1,0 +1,38 @@
+[
+  {
+    "name": "test_db",
+    "tables": [
+      {
+        "name": "test_table",
+        "columns": [
+          {
+            "name": "test_column1",
+            "kind": "default"
+          },
+          {
+            "name": "test_column2",
+            "kind": "master"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "test_db",
+    "tables": [
+      {
+        "name": "test_table",
+        "columns": [
+          {
+            "name": "test_column1",
+            "kind": "default"
+          },
+          {
+            "name": "test_column2",
+            "kind": "master"
+          }
+        ]
+      }
+    ]
+  }
+]
