@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/guregu/sqlx"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -45,7 +45,7 @@ func New(user, password, host, port, name string) (Repository, error) {
 		name,
 		"Asia%2FTokyo",
 	)
-	log.Info("[Connect]\n", ds)
+	log.Info("[Connect] ", ds)
 	db, err := sqlx.Connect("mysql", ds)
 	repo := Repository{
 		db:   db,
@@ -63,14 +63,6 @@ func New(user, password, host, port, name string) (Repository, error) {
 }
 
 func (repo *Repository) Use(database string) error {
-	// ds := fmt.Sprintf(
-	// 	"%s:%s@tcp(%s)/%s?parseTime=true&columnsWithAlias=true&loc=%s",
-	// 	repo.user,
-	// 	repo.password,
-	// 	fmt.Sprintf("%s:%s", repo.host, repo.port),
-	// 	database,
-	// 	"Asia%2FTokyo",
-	// )
 	ds := fmt.Sprintf(
 		"%s:%s@tcp(%s)/%s",
 		repo.user,
@@ -78,54 +70,20 @@ func (repo *Repository) Use(database string) error {
 		fmt.Sprintf("%s:%s", repo.host, repo.port),
 		database,
 	)
-	log.Info("[Connect]:", ds)
+	log.Println("[Connect]:", ds)
 	db, err := sqlx.Connect("mysql", ds)
 
 	repo.db = db
+	repo.root = db
 	repo.name = database
 
 	return err
 }
 
 const (
-	UpdateDefaultMasking = `
-		UPDATE 
-			:table
-		SET 
-			:column = CONCAT(
-    LEFT(
-      :column, 1
-      )
-    ), 
-    REPEAT(
-      '*', 
-      CHAR_LENGTH(:column) - 1
-    )
-  );
-	`
+	UpdateDefaultMasking = `UPDATE %s SET %s = CONCAT(LEFT( %s, 1),REPEAT('*',CHAR_LENGTH(%s) - 1));`
 
-	UpdateMasterMasking = `
-		UPDATE 
-			:table 
-		SET 
-			:column = CONCAT(
-    REPEAT(
-      '*', 
-      CHAR_LENGTH(:Column)- TRUNCATE(
-        CHAR_LENGTH(:column)/ 2, 
-        0
-      )
-    ), 
-    RIGHT(
-      :column, 
-      TRUNCATE(
-        CHAR_LENGTH(:column)/ 2, 
-        0
-      )
-    )
-  );
-	
-	`
+	UpdateMasterMasking = `UPDATE %s SET %s = CONCAT(REPEAT('*', CHAR_LENGTH(%s)- TRUNCATE(CHAR_LENGTH(%s)/ 2, 0)), RIGHT(%s, TRUNCATE(CHAR_LENGTH(%s)/ 2, 0)));`
 )
 
 type Masked struct {
@@ -135,21 +93,21 @@ type Masked struct {
 
 // Leave one letter and mask
 func (repo *Repository) DefaultMaking(ctx context.Context, table, column string) error {
-	m := Masked{
-		Table:  table,
-		Column: column,
-	}
-	_, err := repo.db.NamedExecContext(ctx, UpdateDefaultMasking, m)
+	// for check exec sql
+	q := fmt.Sprintf(UpdateDefaultMasking, table, column, column, column)
+	log.Println("[SQL] " + q)
+
+	_, err := repo.db.ExecContext(ctx, q)
 	return err
 }
 
 // Leave the half number of word and mask
 func (repo *Repository) MasterMasking(ctx context.Context, table, column string) error {
-	m := Masked{
-		Table:  table,
-		Column: column,
-	}
-	_, err := repo.db.NamedExecContext(ctx, UpdateMasterMasking, m)
+	// for check exec sql
+	q := fmt.Sprintf(UpdateMasterMasking, table, column, column, column, column, column)
+	log.Println("[SQL] " + q)
+
+	_, err := repo.db.ExecContext(ctx, q)
 
 	return err
 }

@@ -37,7 +37,7 @@ func main() {
 		if err != nil && err != sql.ErrNoRows {
 			return err
 		}
-		return nil
+		return err
 	})
 
 	if err != nil {
