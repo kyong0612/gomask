@@ -8,6 +8,7 @@ import (
 	"gomask/repository"
 	"io/ioutil"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
@@ -51,10 +52,10 @@ func main() {
 			log.Fatalln(err)
 		}
 		err = repo.Tx(ctx, func(txRepo repository.Repository) error {
-
 			for _, table := range db.Tables {
 				for _, column := range table.Columns {
-
+					// // wait
+					// setTimeout(1)
 					switch column.Kind {
 					case "default":
 						err := txRepo.DefaultMaking(ctx, table.Name, column.Name)
@@ -76,6 +77,11 @@ func main() {
 						if err != nil && err != sql.ErrNoRows {
 							return err
 						}
+					case "topOne":
+						err := txRepo.TopOneMaking(ctx, table.Name, column.Name)
+						if err != nil && err != sql.ErrNoRows {
+							return err
+						}
 					default:
 						return fmt.Errorf("[Masking kind does not match] %s", column.Kind)
 					}
@@ -93,4 +99,9 @@ func main() {
 
 	fmt.Println("\n#### finish ####")
 
+}
+
+func setTimeout(second int) {
+	fmt.Println("waiting...")
+	time.Sleep(time.Duration(second) * time.Second)
 }

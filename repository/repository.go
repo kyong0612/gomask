@@ -63,7 +63,6 @@ func New(user, password, host, port, name string) (Repository, error) {
 }
 
 func (repo *Repository) Use(database string) error {
-	fmt.Printf("%+v", repo.dataSource)
 	ds := fmt.Sprintf(
 		"%s:%s@tcp(%s)/%s?parseTime=true&columnsWithAlias=true&loc=%s",
 		repo.user,
@@ -85,11 +84,13 @@ func (repo *Repository) Use(database string) error {
 const (
 	UpdateDefaultMasking = `UPDATE %s SET %s = CONCAT(LEFT(%s, 1),REPEAT('*',CHAR_LENGTH(%s) - 1));`
 
-	UpdateMasterMasking = `UPDATE %s SET %s = CONCAT(REPEAT('*', CHAR_LENGTH(%s)- TRUNCATE(CHAR_LENGTH(%s)/ 2, 0)), RIGHT(%s, TRUNCATE(CHAR_LENGTH(%s)/ 2, 0)));`
+	UpdateMasterMasking = `UPDATE %s SET %s = CONCAT(REPEAT('*', TRUNCATE(CHAR_LENGTH(%s)/ 2, 0)), RIGHT(%s, CHAR_LENGTH(%s)- TRUNCATE(CHAR_LENGTH(%s)/ 2, 0)));`
 
 	UpdateJsonMasking = `UPDATE %s SET %s = "{}";`
 
 	UpdateIntMasking = `UPDATE %s SET %s = CONCAT(LEFT(%s, 1),REPEAT(0,CHAR_LENGTH(%s) - 1));`
+
+	UpdateTopOneMasking = `UPDATE %s SET %s = CONCAT(REPEAT('*', 1), RIGHT(%s, CHAR_LENGTH(%s)- 1));`
 )
 
 // Leave one letter and mask
@@ -130,6 +131,15 @@ func (repo *Repository) JsonMasking(ctx context.Context, table, column string) e
 
 	_, err := repo.db.ExecContext(ctx, q)
 
+	return err
+}
+
+func (repo *Repository) TopOneMaking(ctx context.Context, table, column string) error {
+	// for check exec sql
+	q := fmt.Sprintf(UpdateTopOneMasking, table, column, column, column)
+	log.Println("[SQL] " + q)
+
+	_, err := repo.db.ExecContext(ctx, q)
 	return err
 }
 
