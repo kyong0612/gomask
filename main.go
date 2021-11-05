@@ -45,15 +45,16 @@ func main() {
 
 	ctx := context.Background()
 
-	err = repo.Tx(ctx, func(txRepo repository.Repository) error {
+	for _, db := range t {
+		err = repo.Use(db.Name)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		err = repo.Tx(ctx, func(txRepo repository.Repository) error {
 
-		for _, db := range t {
-			err = repo.Use(db.Name)
-			if err != nil {
-				log.Fatalln(err)
-			}
 			for _, table := range db.Tables {
 				for _, column := range table.Columns {
+
 					switch column.Kind {
 					case "default":
 						err := txRepo.DefaultMaking(ctx, table.Name, column.Name)
@@ -81,10 +82,11 @@ func main() {
 				}
 
 			}
-		}
+			return nil
 
-		return nil
-	})
+		})
+
+	}
 	if err != nil {
 		log.Error("error in transaction:\n", err)
 	}
