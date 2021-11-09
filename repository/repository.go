@@ -91,6 +91,8 @@ const (
 	UpdateIntMasking = `UPDATE %s SET %s = CONCAT(LEFT(%s, 1),REPEAT(0,CHAR_LENGTH(%s) - 1));`
 
 	UpdateTopOneMasking = `UPDATE %s SET %s = CONCAT(REPEAT('*', 1), RIGHT(%s, CHAR_LENGTH(%s)- 1));`
+
+	UpdateMidTwoOfNineMasking = `UPDATE %s SET %s = CONCAT(LEFT(%s, CHAR_LENGTH(%s) - 6), REPEAT('*', CHAR_LENGTH(%s) - 7), RIGHT(%s,CHAR_LENGTH(%s) - 5));`
 )
 
 // Leave one letter and mask
@@ -137,6 +139,15 @@ func (repo *Repository) JsonMasking(ctx context.Context, table, column string) e
 func (repo *Repository) TopOneMaking(ctx context.Context, table, column string) error {
 	// for check exec sql
 	q := fmt.Sprintf(UpdateTopOneMasking, table, column, column, column)
+	log.Println("[SQL] " + q)
+
+	_, err := repo.db.ExecContext(ctx, q)
+	return err
+}
+
+func (repo *Repository) MidTwoOfNineMaking(ctx context.Context, table, column string) error {
+	// for check exec sql
+	q := fmt.Sprintf(UpdateMidTwoOfNineMasking, table, column, column, column, column, column, column)
 	log.Println("[SQL] " + q)
 
 	_, err := repo.db.ExecContext(ctx, q)

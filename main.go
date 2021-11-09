@@ -82,6 +82,11 @@ func main() {
 						if err != nil && err != sql.ErrNoRows {
 							return err
 						}
+					case "midTwo":
+						err := txRepo.MidTwoOfNineMaking(ctx, table.Name, column.Name)
+						if err != nil && err != sql.ErrNoRows {
+							return err
+						}
 					default:
 						return fmt.Errorf("[Masking kind does not match] %s", column.Kind)
 					}
