@@ -82,8 +82,8 @@ func main() {
 						if err != nil && err != sql.ErrNoRows {
 							return err
 						}
-					case "midTwo":
-						err := txRepo.MidTwoOfNineMaking(ctx, table.Name, column.Name)
+					case "threeNineAdd":
+						err := txRepo.ThreeNineAddMaking(ctx, table.Name, column.Name)
 						if err != nil && err != sql.ErrNoRows {
 							return err
 						}

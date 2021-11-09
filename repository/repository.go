@@ -92,7 +92,7 @@ const (
 
 	UpdateTopOneMasking = `UPDATE %s SET %s = CONCAT(REPEAT('*', 1), RIGHT(%s, CHAR_LENGTH(%s)- 1));`
 
-	UpdateMidTwoOfNineMasking = `UPDATE %s SET %s = CONCAT(LEFT(%s, CHAR_LENGTH(%s) - 6), REPEAT('*', CHAR_LENGTH(%s) - 7), RIGHT(%s,CHAR_LENGTH(%s) - 5));`
+	UpdateThreeNineAddMasking = `UPDATE %s SET %s = %s + 999;`
 )
 
 // Leave one letter and mask
@@ -145,9 +145,9 @@ func (repo *Repository) TopOneMaking(ctx context.Context, table, column string) 
 	return err
 }
 
-func (repo *Repository) MidTwoOfNineMaking(ctx context.Context, table, column string) error {
+func (repo *Repository) ThreeNineAddMaking(ctx context.Context, table, column string) error {
 	// for check exec sql
-	q := fmt.Sprintf(UpdateMidTwoOfNineMasking, table, column, column, column, column, column, column)
+	q := fmt.Sprintf(UpdateThreeNineAddMasking, table, column, column)
 	log.Println("[SQL] " + q)
 
 	_, err := repo.db.ExecContext(ctx, q)
