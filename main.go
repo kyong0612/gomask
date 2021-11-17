@@ -51,55 +51,35 @@ func main() {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		err = repo.Tx(ctx, func(txRepo repository.Repository) error {
-			for _, table := range db.Tables {
-				for _, column := range table.Columns {
-					// // wait
-					// setTimeout(1)
-					switch column.Kind {
-					case "default":
-						err := txRepo.DefaultMaking(ctx, table.Name, column.Name)
-						if err != nil && err != sql.ErrNoRows {
-							return err
-						}
-					case "int":
-						err := txRepo.IntMaking(ctx, table.Name, column.Name)
-						if err != nil && err != sql.ErrNoRows {
-							return err
-						}
-					case "master":
-						err := txRepo.MasterMasking(ctx, table.Name, column.Name)
-						if err != nil && err != sql.ErrNoRows {
-							return err
-						}
-					case "json":
-						err := txRepo.JsonMasking(ctx, table.Name, column.Name)
-						if err != nil && err != sql.ErrNoRows {
-							return err
-						}
-					case "topOne":
-						err := txRepo.TopOneMaking(ctx, table.Name, column.Name)
-						if err != nil && err != sql.ErrNoRows {
-							return err
-						}
-					case "threeNineAdd":
-						err := txRepo.ThreeNineAddMaking(ctx, table.Name, column.Name)
-						if err != nil && err != sql.ErrNoRows {
-							return err
-						}
-					default:
-						return fmt.Errorf("[Masking kind does not match] %s", column.Kind)
-					}
+		for _, table := range db.Tables {
+			for _, column := range table.Columns {
+				// // wait
+				// setTimeout(1)
+				switch column.Kind {
+				case "default":
+					err = repo.DefaultMaking(ctx, table.Name, column.Name)
+				case "int":
+					err = repo.IntMaking(ctx, table.Name, column.Name)
+				case "master":
+					err = repo.MasterMasking(ctx, table.Name, column.Name)
+				case "json":
+					err = repo.JsonMasking(ctx, table.Name, column.Name)
+				case "topOne":
+					err = repo.TopOneMaking(ctx, table.Name, column.Name)
+
+				case "threeNineAdd":
+					err = repo.ThreeNineAddMaking(ctx, table.Name, column.Name)
+				default:
+					err = fmt.Errorf("[Masking kind does not match] %s", column.Kind)
 				}
 
+				if err != nil && err != sql.ErrNoRows {
+					log.Errorf("error in exec:\n%s\n", err)
+				}
 			}
-			return nil
 
-		})
+		}
 
-	}
-	if err != nil {
-		log.Error("error in transaction:\n", err)
 	}
 
 	fmt.Println("\n#### finish ####")

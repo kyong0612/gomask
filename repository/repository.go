@@ -90,7 +90,7 @@ const (
 
 	UpdateIntMasking = `UPDATE %s SET %s = CONCAT(LEFT(%s, 1),REPEAT(0,CHAR_LENGTH(%s) - 1));`
 
-	UpdateTopOneMasking = `UPDATE %s SET %s = CONCAT(REPEAT('*', 1), RIGHT(%s, CHAR_LENGTH(%s)- 1));`
+	UpdateTopOneMasking = `UPDATE %s SET %s = CONCAT(REPEAT('0', 1), RIGHT(%s, CHAR_LENGTH(%s)- 1));`
 
 	UpdateThreeNineAddMasking = `UPDATE %s SET %s = %s + 999;`
 )
