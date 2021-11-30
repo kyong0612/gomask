@@ -47,7 +47,7 @@ func main() {
 	ctx := context.Background()
 
 	for _, db := range t {
-		err = repo.Use(db.Name)
+		err = repo.Use(ctx, db.Name)
 		if err != nil {
 			log.Fatalln(err)
 		}

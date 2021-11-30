@@ -71,8 +71,11 @@ func (repo *Repository) Use(database string) error {
 		database,
 		"Asia%2FTokyo",
 	)
-	log.Println("[Connect]:", ds)
-	db, err := sqlx.Connect("mysql", ds)
+	log.Println("[Open]:", ds)
+	db, err := sqlx.Open("mysql", ds)
+	if err != nil {
+		return err
+	}
 
 	repo.db = db
 	repo.root = db
