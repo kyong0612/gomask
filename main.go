@@ -82,11 +82,15 @@ func main() {
 
 	}
 
-	fmt.Println("\n#### finish ####")
-
+	ExecTime(time.Now(), "\n#### finish ####")
 }
 
 func setTimeout(second int) {
 	fmt.Println("waiting...")
 	time.Sleep(time.Duration(second) * time.Second)
+}
+
+func ExecTime(start time.Time, message string) {
+	elapsed := time.Since(start)
+	log.Printf("%s took %s", message, elapsed)
 }
